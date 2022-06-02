@@ -10,6 +10,7 @@ from simsopt.util.zoo import get_ncsx_data
 from simsopt.geo.surfaceobjectives import NonQuasiHelicalRatio, Iotas
 from simsopt.objectives.utilities import QuadraticPenalty
 from scipy.optimize import minimize
+import math
 import numpy as np
 import os
 
@@ -32,16 +33,17 @@ current_sum = sum(abs(c.current.get_value()) for c in coils)
 G0 = 2. * np.pi * current_sum * (4 * np.pi * 10**(-7) / (2 * np.pi))
 
 
-# RESOLUTION DETAILS OF SURFACE ON WHICH WE OPTIMIZE FOR QA
+# RESOLUTION DETAILS OF SURFACE ON WHICH WE OPTIMIZE FOR QH
 mpol = 6
 ntor = 6
 stellsym = True
 nfp = 3
+N = nfp
 
-phis = np.linspace(0, 1/nfp, 2*ntor+1, endpoint=False)
-thetas = np.linspace(0, 1, 2*mpol+1, endpoint=False)
+phis = np.linspace(0, math.sqrt(N**2+1)/nfp, 2*ntor+1, endpoint=False)
+thetas = np.linspace(0, math.sqrt(N**2+1), 2*mpol+1, endpoint=False)
 s = SurfaceXYZTensorFourier(
-    mpol=mpol, ntor=ntor, stellsym=stellsym, nfp=nfp, quadpoints_phi=phis, quadpoints_theta=thetas)
+    mpol=mpol, ntor=ntor, stellsym=stellsym, nfp=nfp, quadpoints_phi=phis, quadpoints_theta=thetas, N= N)
 s.fit_to_curve(ma, 0.1, flip_theta=True)
 iota = -0.406
 
@@ -50,8 +52,7 @@ vol_target = vol.J()
 
 # COMPUTE THE SURFACE
 boozer_surface = BoozerSurface(bs, s, vol, vol_target)
-res = boozer_surface.solve_residual_equation_exactly_newton(
-    tol=1e-13, maxiter=20, iota=iota, G=G0)
+res = boozer_surface.solve_residual_equation_exactly_newton(tol=1e-13, maxiter=20, iota=iota, G=G0)
 print(f"NEWTON {res['success']}: iter={res['iter']}, iota={res['iota']:.3f}, vol={s.volume():.3f}, ||residual||={np.linalg.norm(boozer_surface_residual(s, res['iota'], res['G'], bs, derivatives=0)):.3e}")
 
 # SET UP THE OPTIMIZATION PROBLEM AS A SUM OF OPTIMIZABLES
@@ -60,7 +61,6 @@ mr = MajorRadius(boozer_surface)
 ls = [CurveLength(c) for c in base_curves]
 J_major_radius = QuadraticPenalty(mr, 1.5, '=')
 J_iotas = QuadraticPenalty(Iotas(boozer_surface), res['iota'], '=')
-N = nfp
 J_nonQHRatio = NonQuasiHelicalRatio(boozer_surface, bs_nonQH, N)
 Jls = QuadraticPenalty(sum(ls), 21., 'max')
 

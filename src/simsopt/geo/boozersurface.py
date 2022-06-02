@@ -484,6 +484,7 @@ class BoozerSurface(Optimizable):
         which is the same as the number of surface dofs + 2 extra unknowns
         given by iota and G.
         """
+        print(self.need_to_run_code)
         if not self.need_to_run_code:
             return self.res
 

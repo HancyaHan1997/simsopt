@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 import simsoptpp as sopp
 from .surface import Surface
@@ -64,7 +65,7 @@ class SurfaceXYZTensorFourier(sopp.SurfaceXYZTensorFourier, Surface):
     def __init__(self, nfp=1, stellsym=True, mpol=1, ntor=1,
                  clamped_dims=[False, False, False],
                  nphi=None, ntheta=None, range="full torus",
-                 quadpoints_phi=None, quadpoints_theta=None):
+                 quadpoints_phi=None, quadpoints_theta=None, N=0):
 
         quadpoints_phi, quadpoints_theta = Surface.get_quadpoints(nfp=nfp,
                                                                   nphi=nphi, ntheta=ntheta, range=range,
@@ -76,6 +77,7 @@ class SurfaceXYZTensorFourier(sopp.SurfaceXYZTensorFourier, Surface):
         self.xcs[0, 0] = 1.0
         self.xcs[1, 0] = 0.1
         self.zcs[mpol+1, 0] = 0.1
+        self.N = N
         Surface.__init__(self, x0=self.get_dofs(),
                          external_dof_setter=SurfaceXYZTensorFourier.set_dofs_impl)
 
@@ -149,14 +151,15 @@ class SurfaceXYZTensorFourier(sopp.SurfaceXYZTensorFourier, Surface):
         def npsame(a, b):
             return a.shape == b.shape and np.allclose(a, b)
 
-        if npsame(phis, np.linspace(0, 1/self.nfp, 2*ntor+1, endpoint=False)) and \
-                npsame(thetas, np.linspace(0, 1, 2*mpol+1, endpoint=False)):
+        if npsame(phis, np.linspace(0, math.sqrt(self.N**2+1)/self.nfp, 2*ntor+1, endpoint=False)) and \
+                npsame(thetas, np.linspace(0, math.sqrt(self.N**2+1), 2*mpol+1, endpoint=False)):
             mask[:, mpol+1:] = False
             mask[ntor+1:, 0] = False
-        if npsame(phis, np.linspace(0, 1/self.nfp, 2*ntor+1, endpoint=False)) and \
-                npsame(thetas, np.linspace(0, 0.5, mpol+1, endpoint=False)):
+        if npsame(phis, np.linspace(0, math.sqrt(self.N**2+1)/self.nfp, 2*ntor+1, endpoint=False)) and \
+                npsame(thetas, np.linspace(0, 0.5*math.sqrt(self.N**2+1), mpol+1, endpoint=False)):
             mask[ntor+1:, 0] = False
-        if npsame(phis, np.linspace(0, 1/(2*self.nfp), ntor+1, endpoint=False)) and \
-                npsame(thetas, np.linspace(0, 1, 2*mpol+1, endpoint=False)):
+        if npsame(phis, np.linspace(0, math.sqrt(self.N**2+1)/(2*self.nfp), ntor+1, endpoint=False)) and \
+                npsame(thetas, np.linspace(0, math.sqrt(self.N**2+1), 2*mpol+1, endpoint=False)):
             mask[0, mpol+1:] = False
+
         return mask

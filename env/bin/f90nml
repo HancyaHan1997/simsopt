@@ -1,0 +1,5 @@
+#!/Users/hancyahan/simsopt/env/bin/python3
+
+from f90nml import cli
+
+cli.parse()

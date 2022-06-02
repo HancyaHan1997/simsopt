@@ -19,7 +19,6 @@ import os
 # Directory for output
 OUT_DIR = "./output/"
 os.makedirs(OUT_DIR, exist_ok=True)
-
 print("Running 2_Intermediate/boozerQA.py")
 print("================================")
 
