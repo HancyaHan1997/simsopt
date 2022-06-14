@@ -3,7 +3,7 @@ from simsopt.field.biotsavart import BiotSavart
 from simsopt.geo.surfacexyztensorfourier import SurfaceXYZTensorFourier
 from simsopt.geo.boozersurface import BoozerSurface
 from simsopt.geo.curve import curves_to_vtk
-from simsopt.geo.surfaceobjectives import boozer_surface_residual, ToroidalFlux, Volume, MajorRadius
+from simsopt.geo.surfaceobjectives import boozer_surface_residual, Volume, MajorRadius
 from simsopt.geo.curveobjectives import CurveLength, CurveCurveDistance
 from simsopt.field.coil import coils_via_symmetries
 from simsopt.util.zoo import get_ncsx_data
@@ -52,7 +52,7 @@ vol_target = vol.J()
 
 # COMPUTE THE SURFACE
 boozer_surface = BoozerSurface(bs, s, vol, vol_target)
-res = boozer_surface.solve_residual_equation_exactly_newton(tol=1e-13, maxiter=20, iota=iota, G=G0)
+res = boozer_surface.solve_residual_equation_exactly_newton(tol=1e-12, maxiter=20, iota=iota, G=G0)
 print(f"NEWTON {res['success']}: iter={res['iter']}, iota={res['iota']:.3f}, vol={s.volume():.3f}, ||residual||={np.linalg.norm(boozer_surface_residual(s, res['iota'], res['G'], bs, derivatives=0)):.3e}")
 
 # SET UP THE OPTIMIZATION PROBLEM AS A SUM OF OPTIMIZABLES

@@ -519,6 +519,7 @@ class BoozerSurface(Optimizable):
             else:
                 b = np.concatenate((r[mask], [(label.J()-self.targetlabel), s.gamma()[0, 0, 2]]))
             norm = np.linalg.norm(b)
+            print("norm of b is "+ str(norm)+ " tol is "+str(tol))
             if norm <= tol:
                 break
             if s.stellsym:
